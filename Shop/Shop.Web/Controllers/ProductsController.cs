@@ -12,29 +12,29 @@ namespace Shop.Web.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly DataContext _context;
+        private readonly IRepository repository;
 
-        public ProductsController(DataContext context)
+        public ProductsController(IRepository repository)
         {
-            _context = context;
+            this.repository = repository;
         }
 
         // GET: Products
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.Products.ToListAsync());
+            return View(repository.GetProducts());
         }
 
         // GET: Products/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = repository.GetProduct(id.Value);
+                
             if (product == null)
             {
                 return NotFound();
@@ -54,12 +54,12 @@ namespace Shop.Web.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Price,ImageUrl,LastPucharse,LastSale,IsAvailable,Stock")] Product product)
+        public IActionResult Create(Product product)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(product);
-                await _context.SaveChangesAsync();
+                repository.AddProduct(product);
+                repository.SaveAllAsyncface();
                 return RedirectToAction(nameof(Index));
             }
             return View(product);
